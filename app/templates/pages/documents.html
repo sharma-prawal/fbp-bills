@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-head compact">
+  <div>
+    <p class="luxury-script">Press Registry</p>
+    <p class="eyebrow">Output history</p>
+    <h1>Documents</h1>
+    <p class="lede">Download generated PDFs, logbooks, HTML previews, or the complete reimbursement bundle.</p>
+  </div>
+  <div class="head-actions">
+    {% if selected_month %}
+      <a class="button" href="/bundle/{{ selected_month }}">Build Bundle</a>
+    {% endif %}
+    <a class="button secondary" href="/">Dashboard</a>
+  </div>
+</section>
+
+<section class="card filter-panel">
+  <form method="get" class="filter-grid">
+    <label>Month
+      <input type="month" name="month" value="{{ selected_month }}">
+    </label>
+    <label>Document
+      <select name="bill_type">
+        <option value="">All documents</option>
+        {% for key, config in bill_types.items() %}
+        <option value="{{ key }}" {% if key == selected_type %}selected{% endif %}>{{ config.name }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>History
+      <select name="latest">
+        <option value="1" {% if latest_only %}selected{% endif %}>Latest version only</option>
+        <option value="0" {% if not latest_only %}selected{% endif %}>All versions</option>
+      </select>
+    </label>
+    <button type="submit">Apply</button>
+  </form>
+  <div class="bundle-callout">
+    <div>
+      <p class="eyebrow">Month bundle</p>
+      <strong>{{ selected_month or "No month selected" }}</strong>
+    </div>
+    {% if bundle_url %}
+      <a class="button secondary" href="{{ bundle_url }}">Download bundle</a>
+    {% elif selected_month %}
+      <a class="button secondary" href="/bundle/{{ selected_month }}">Create bundle</a>
+    {% endif %}
+  </div>
+</section>
+
+{% include "pages/version_table.html" %}
+{% endblock %}

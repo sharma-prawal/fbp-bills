@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-head compact">
+  <div>
+    <p class="eyebrow">Metadata</p>
+    <h1>Book lookup</h1>
+    <p class="lede">Search OpenLibrary for title, author, publisher, and description details.</p>
+  </div>
+</section>
+<form method="get" class="card">
+  <div class="search-row">
+    <label>Keyword <input name="q" value="{{ q }}" placeholder="Book title, author, or topic"></label>
+    <button>Search</button>
+  </div>
+</form>
+<div class="table-wrap">
+<table class="data-table">
+  <thead><tr><th>Title</th><th>Author</th><th>Publisher</th><th>Description</th></tr></thead>
+  <tbody>
+    {% for item in results %}
+    <tr><td>{{ item.title }}</td><td>{{ item.author }}</td><td>{{ item.publisher }}</td><td>{{ item.description }}</td></tr>
+    {% else %}
+    <tr><td colspan="4" class="empty-state">No lookup results.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

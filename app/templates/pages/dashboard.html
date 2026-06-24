@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-head">
+  <div>
+    <p class="luxury-script">Bespoke Registry</p>
+    <p class="eyebrow">Monthly packet</p>
+    <h1>Generate reimbursement documents</h1>
+    <p class="lede">Review readiness, open a bill only when a one-off override is needed, then download the month bundle.</p>
+  </div>
+  <div class="head-actions">
+    <a class="button secondary" href="/profile">Edit Profile</a>
+    <form class="month-builder" method="get" action="/">
+      <label>
+        <span>Bundle month</span>
+        <input type="month" name="month" value="{{ month }}" required>
+      </label>
+      <button class="secondary" type="submit">Load Month</button>
+      <button type="submit" formmethod="post" formaction="/bundle">Build Bundle</button>
+    </form>
+  </div>
+</section>
+
+<section class="console-strip">
+  <div>
+    <p class="eyebrow">Selected month</p>
+    <strong>{{ month_display }}</strong>
+    {% if is_future_month %}
+    <small>Fuel uses the latest price available today.</small>
+    {% endif %}
+  </div>
+  <div>
+    <p class="eyebrow">Profile</p>
+    <strong>{{ profile.employee_name or profile.get('employee_name') }}</strong>
+  </div>
+  <div>
+    <p class="eyebrow">Vehicle</p>
+    <strong>{{ profile.vehicle_number or profile.get('vehicle_number') }}</strong>
+  </div>
+  <div>
+    <p class="eyebrow">Route</p>
+    <strong>{{ profile.default_from_city or profile.get('default_from_city') }} to {{ profile.default_to_city or profile.get('default_to_city') }}</strong>
+  </div>
+</section>
+
+<section class="workflow-strip" aria-label="Workflow">
+  <div><strong>1</strong><span>Profile defaults</span></div>
+  <div><strong>2</strong><span>Readiness check</span></div>
+  <div><strong>3</strong><span>Preview and generate</span></div>
+  <div><strong>4</strong><span>Download bundle</span></div>
+</section>
+
+<section class="grid four">
+  {% for card in bill_cards %}
+  <article class="doc-card">
+    <div class="doc-card-monogram">{{ card.key[:1]|upper }}</div>
+    <div>
+      <p class="eyebrow">{{ card.key }}</p>
+      <h2>{{ card.config.name }}</h2>
+      <div class="mini-readiness">
+        {% for item in card.readiness[:3] %}
+        <span class="{{ item.state }}">{{ item.label }}: {{ item.value }}</span>
+        {% endfor %}
+      </div>
+    </div>
+    <a class="button secondary" href="/generate/{{ card.key }}?month={{ month }}">Open</a>
+  </article>
+  {% endfor %}
+</section>
+
+<section class="section-block">
+  <div class="section-heading">
+    <div>
+      <h2>Latest generated documents</h2>
+      <p>Only latest versions are shown here. Full history is in Documents.</p>
+    </div>
+    <a class="text-link" href="/documents?month={{ month }}">All documents</a>
+  </div>
+  {% include "pages/version_table.html" %}
+</section>
+{% endblock %}

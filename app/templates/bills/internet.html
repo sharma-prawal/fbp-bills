@@ -1,0 +1,123 @@
+{% extends "bills/_pdf_base.html" %}
+{% block style %}
+<style>
+  @page { size: A4; margin: 0; }
+  body { background: #f4f2f2; }
+  .invoice { width: 139mm; min-height: 283mm; margin: 8mm auto 6mm; border: 1px solid #4b4b4b; padding: 10px; box-sizing: border-box; }
+  .head {
+    display: grid;
+    grid-template-columns: 110px minmax(0, 1fr) minmax(0, 1fr);
+    gap: 14px;
+    align-items: start;
+  }
+  .head > div { min-width: 0; }
+  .logo { color: #e11; font-size: 21px; font-weight: 700; margin: 14px 0; }
+  .provider-logo { width: 75px; max-height: 40px; object-fit: contain; margin: 12px 0; }
+  .provider { background: #fff; border-radius: 0 0 8px 0; padding: 10px; font-weight: 700; line-height: 1.35; }
+  .recipient { text-align: right; font-weight: 700; }
+  .customer-details,
+  .billing-details {
+    padding-top: 58px;
+    font-weight: 700;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+  .billing-details {
+    width: 148px;
+    max-width: 100%;
+    justify-self: end;
+    padding-right: 14px;
+    box-sizing: border-box;
+    text-align: right;
+  }
+  .billing-row {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 3px;
+    justify-content: end;
+  }
+  .billing-label { white-space: nowrap; }
+  .billing-value {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+  .box-table { margin-top: 47px; border: 2px solid #ff930d; }
+  .box-table th, .box-table td { padding: 9px 7px; }
+  .box-table th { border: 1px solid #ff930d; font-weight: 700; text-align: center; }
+  .box-table td { border: 1px solid #ff930d; text-align: center; }
+  .orange th, .orange .bar { background: #ff930d; color: #fff; }
+  .section { margin-top: 22px; border: 1px solid #ff930d; }
+  .section-head { display: grid; grid-template-columns: 1fr 1fr 1fr; padding: 8px; }
+  .section th, .section td { padding: 9px 7px; }
+  .registered-office { margin-top: 48px; }
+  .terms { margin-top: 57px; border-radius: 14px; overflow: hidden; background: #fff; }
+  .terms h2 { background: #ff930d; padding: 10px; }
+  .terms ol { line-height: 3.15; padding-bottom: 16px; }
+  .ack { margin-top: 58px; background: #fff; }
+  .ack h3 { background: #ff930d; color: #fff; padding: 7px; text-align: center; }
+  body, td, th, p, li { font-size: 10.2px; }
+</style>
+{% endblock %}
+{% block body %}
+<main class="invoice">
+  <div class="recipient">(Receipt for the Recipient)</div>
+  <section class="head">
+    <div class="provider">
+      {% if provider_logo %}
+        <img class="provider-logo" src="{{ provider_logo }}" alt="{{ bill.provider_name }} logo">
+      {% else %}
+        <div class="logo">{{ bill.provider_logo_text or bill.provider_name }}</div>
+      {% endif %}
+      {{ bill.provider_name }}<br>{{ bill.provider_address }}
+    </div>
+    <div class="customer-details">
+      Name: {{ bill.customer_name }}<br>
+      {{ bill.customer_address }}<br>
+      Account Number:<br>{{ bill.account_number }}
+    </div>
+    <div class="billing-details">
+      <div class="billing-row"><span class="billing-label">Invoice No:</span><span class="billing-value">{{ bill.invoice_number }}</span></div>
+      <div class="billing-row"><span class="billing-label">Account No:</span><span class="billing-value">{{ bill.account_number }}</span></div>
+      <div class="billing-row"><span class="billing-label">Bill Date:</span><span class="billing-value">{{ bill.bill_date|human_date }}</span></div>
+    </div>
+  </section>
+
+  <table class="box-table">
+    <tr><th>Taxble<br>Amount</th><th>CGST<br>Rate%</th><th>CGST<br>Amount INR</th><th>SGST<br>Rate%</th><th>SGST<br>Amount INR</th><th>Payments<br>Received INR</th></tr>
+    <tr><td>INR {{ bill.tax.taxable_amount|money }}</td><td>{{ bill.tax.cgst_rate|money(0) }}</td><td>INR {{ totals.cgst_amount|money }}</td><td>{{ bill.tax.sgst_rate|money(0) }}</td><td>INR {{ totals.sgst_amount|money }}</td><td>INR {{ totals.payments_received|money }}</td></tr>
+  </table>
+
+  <section class="section orange">
+    <div class="section-head"><strong>Service Plan Summary</strong><span>Account No: {{ bill.account_number }}</span><span>User Name: {{ bill.customer_name }}</span></div>
+    <table><tr><th>Plan Speed</th><th>Plan Package</th><th>Plan Validity</th><th>Discount</th><th>Plan Amount</th></tr>
+      <tr class="center"><td>{{ bill.plan_speed }}</td><td>{{ bill.plan_package }}</td><td>{{ bill.plan_validity }}</td><td>{{ bill.discount|money(0) }}</td><td>INR {{ totals.total_amount|money }}</td></tr></table>
+  </section>
+
+  <section class="section orange">
+    <div class="section-head"><strong>Receipt Details</strong><span>Account No: {{ bill.account_number }}</span><span>User Name: {{ bill.customer_name }}</span></div>
+    <table><tr><th>Invoice No.</th><th>Internet Service Description</th><th>Amount Incl. Tax</th></tr>
+      <tr class="center"><td>{{ bill.invoice_number }}</td><td>{{ bill.plan_package }} {{ bill.plan_speed }}</td><td>INR {{ totals.total_amount|money }}</td></tr></table>
+  </section>
+
+  <p class="center registered-office">Registered office address: {{ bill.provider_address }}.</p>
+
+  <section class="terms">
+    <h2>Terms and Conditions</h2>
+    <ol>
+      <li>Cheques to be in favour of "{{ bill.provider_name }}".</li>
+      <li>In case of cheque bounce, INR 100/- penalty will be applicable.</li>
+      <li>{{ bill.provider_name }} shall levy late fee charge in case the bill is paid after the due date.</li>
+      <li>In case of overdue, the right to deactivate your services is reserved.</li>
+      <li>This invoice is system generated hence signature and stamp is not required.</li>
+    </ol>
+  </section>
+
+  <section class="ack">
+    <h3>Acknowledgement Slip</h3>
+    <p class="center">AccountNo : {{ bill.account_number }} &nbsp;&nbsp;&nbsp; Subscriber Name : {{ bill.customer_name }} &nbsp;&nbsp;&nbsp; Payment Method : {{ bill.payment_method }}</p>
+    <p class="center">Invoice No : {{ bill.invoice_number }}</p>
+  </section>
+</main>
+{% endblock %}

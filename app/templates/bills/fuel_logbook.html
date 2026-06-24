@@ -1,0 +1,34 @@
+{% extends "bills/_pdf_base.html" %}
+{% block style %}
+<style>
+  @page { size: 420mm 594mm; margin: 0; }
+  body { font-size: 23px; }
+  .logbook { width: 412mm; margin: 123mm auto 0; border: 2px solid #111; }
+  .logbook th, .logbook td { border: 1px solid #d8d8d8; padding: 5px 7px; line-height: 1.14; }
+  .logbook .title th { border: 0; border-bottom: 2px solid #111; font-size: 20px; text-align: center; padding: 2px; }
+  .logbook .head th { border-bottom: 2px solid #111; font-size: 23px; }
+  .thick-top td { border-top: 3px solid #111; }
+  .thick-bottom td { border-bottom: 3px solid #111; }
+  .right { text-align: right; }
+  .center { text-align: center; }
+</style>
+{% endblock %}
+{% block body %}
+<table class="logbook">
+  <tr class="title"><th colspan="5">LOG BOOK ({{ month_label }})</th></tr>
+  <tr class="head"><th>Date</th><th>From</th><th>To</th><th>KM.Traveled</th><th>Purpose of Travel</th></tr>
+  {% for row in bill.rows if row.km_travelled > 0 %}
+  <tr><td class="center">{{ row.date|short_human_date }}</td><td>{{ row.from_city }}</td><td>{{ row.to_city }}</td><td class="right">{{ row.km_travelled|money(0) }}</td><td>{{ row.purpose }}</td></tr>
+  {% endfor %}
+  <tr class="thick-top"><td colspan="2"></td><td class="right"><strong>Total Running</strong></td><td class="right"><strong>{{ totals.total_km|money(0) }}</strong></td><td></td></tr>
+  <tr><td colspan="5" style="height: 94px;"></td></tr>
+  <tr class="thick-top"><td colspan="5">Bills Attached</td></tr>
+  <tr><th>S.No</th><th>Date</th><th>Ltrs</th><th>Cost Per Lt (as per Bill)</th><th>Total Amount</th></tr>
+  {% for row in bill.rows %}
+  <tr><td class="center">{{ loop.index }}</td><td class="center">{{ row.date|short_human_date }}</td><td class="center">{{ row.litres }}</td><td class="center">{{ row.petrol_price_per_litre }}</td><td class="center">{{ (row.litres * row.petrol_price_per_litre)|money(0) }}</td></tr>
+  {% endfor %}
+  <tr class="thick-top thick-bottom"><td colspan="2"></td><td class="center"><strong>{{ totals.total_litres|money(0) }}</strong></td><td></td><td class="center"><strong>{{ totals.total_amount|money(0) }}</strong></td></tr>
+  <tr><td><strong>Emp Signature</strong></td><td>{{ bill.employee_name }}</td><td colspan="3"></td></tr>
+  <tr><td><strong>Emp Code</strong></td><td>{{ bill.employee_code }}</td><td colspan="3"></td></tr>
+</table>
+{% endblock %}

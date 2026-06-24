@@ -1,0 +1,54 @@
+<div class="table-wrap">
+<table class="data-table">
+  <thead><tr><th>Document</th><th>Month</th><th>Version</th><th>Generated</th><th>PDF</th><th>Fuel files</th><th>Preview</th></tr></thead>
+  <tbody>
+    {% for row in versions %}
+    <tr>
+      <td><span class="type-label">{{ row.bill_type }}</span></td>
+      <td>{{ row.month }}</td>
+      <td>v{{ row.version_number }}</td>
+      <td>{{ row.generated_at }}</td>
+      <td>
+        {% if row.pdf_path %}
+          <a class="action-tag" href="{{ row.pdf_path|output_url }}?v={{ row.id }}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="action-icon"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+            {% if row.bill_type == "fuel" %}Merged PDF{% else %}Download PDF{% endif %}
+          </a>
+        {% endif %}
+      </td>
+      <td>
+        {% if row.bill_type == "fuel" and row.extra_outputs %}
+          <div class="summary-pills" style="gap: 6px;">
+            {% if row.extra_outputs.fuel_logbook_pdf %}
+              <a class="action-tag" href="{{ row.extra_outputs.fuel_logbook_pdf|output_url }}?v={{ row.id }}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="action-icon"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+                Logbook PDF
+              </a>
+            {% endif %}
+            {% if row.extra_outputs.fuel_logbook_xlsx %}
+              <a class="action-tag" href="{{ row.extra_outputs.fuel_logbook_xlsx|output_url }}?v={{ row.id }}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="action-icon"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+                XLSX Logbook
+              </a>
+            {% endif %}
+            {% if row.extra_outputs.fuel_receipts %}<span class="type-label" style="background: transparent; color: var(--muted); border-color: var(--line);">{{ row.extra_outputs.fuel_receipts|length }} receipts</span>{% endif %}
+          </div>
+        {% else %}
+          -
+        {% endif %}
+      </td>
+      <td>
+        {% if row.html_path %}
+          <a class="action-tag" href="{{ row.html_path|output_url }}?v={{ row.id }}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="action-icon"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            HTML
+          </a>
+        {% endif %}
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="7" class="empty-state">No generated documents yet.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>

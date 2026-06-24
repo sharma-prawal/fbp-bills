@@ -1,0 +1,90 @@
+{% extends "bills/_pdf_base.html" %}
+{% block style %}
+<style>
+  @page { size: A4; margin: 0; }
+  body { margin: 0; font-size: 16px; line-height: 1.45; }
+  .book-page {
+    width: 210mm;
+    min-height: 297mm;
+    margin: 0 auto;
+    padding: 24mm 28mm 16mm;
+    box-sizing: border-box;
+    background: #fff;
+  }
+  .book-content { width: 154mm; margin: 0 auto; }
+  h1 { text-align: center; font-size: 20px; margin: 0 0 22px; }
+  .rule { border-top: 1px solid #ddd; margin-bottom: 24px; }
+  .meta {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 34px;
+    margin-bottom: 36px;
+    line-height: 1.55;
+  }
+  .meta > div { min-width: 0; overflow-wrap: anywhere; }
+  .seller { text-align: right; }
+  .summary-title { background: #e8ecef; padding: 10px; font-weight: 700; }
+  .summary-table { table-layout: fixed; }
+  .summary-table col.item { width: 26%; }
+  .summary-table col.description { width: 27%; }
+  .summary-table col.quantity { width: 8%; }
+  .summary-table col.price { width: 12%; }
+  .summary-table col.total-column { width: 27%; }
+  th { border-bottom: 2px solid #ddd; text-align: left; white-space: nowrap; }
+  td { border-bottom: 1px solid #ddd; overflow-wrap: anywhere; }
+  .summary-table th, .summary-table td { padding: 8px; }
+  .item-row td { height: 64mm; }
+  .total { text-align: right; font-weight: 700; padding: 12px 8px 0; }
+  .thanks { text-align: center; margin-top: 30px; line-height: 1.8; }
+  h2 { font-size: 16px; margin-bottom: 12px; }
+  p { margin: 0 0 8px; }
+</style>
+{% endblock %}
+{% block body %}
+<main class="book-page">
+  <div class="book-content">
+    <h1>Book Receipt</h1>
+    <div class="rule"></div>
+    <div class="meta">
+      <div><strong>Receipt No:</strong> {{ bill.receipt_number }}</div>
+      <div class="right"><strong>Receipt Date:</strong> {{ bill.receipt_date|human_date }}</div>
+    </div>
+    <section class="meta">
+      <div>
+        <h2>Bill To,</h2>
+        <p><strong>Customer Name:</strong> {{ bill.customer_name }}<br>
+        <strong>Book Name:</strong> {{ bill.book_name }}<br>
+        <strong>Author:</strong> {{ bill.author }}<br>
+        <strong>Book Publisher:</strong> {{ bill.publisher }}<br>
+        <strong>Payment Method:</strong> {{ bill.payment_method }}</p>
+      </div>
+      <div class="seller">
+        <h2>Sold By,</h2>
+        <p><strong>Store Name:</strong> {{ bill.store_name }}<br>
+        <strong>Store Address:</strong> {{ bill.store_address }}</p>
+      </div>
+    </section>
+    <div class="summary-title">Receipt Summary</div>
+    <table class="summary-table">
+      <colgroup>
+        <col class="item"><col class="description"><col class="quantity">
+        <col class="price"><col class="total-column">
+      </colgroup>
+      <tr><th>Item</th><th>Description</th><th>Qty</th><th>Price</th><th class="right">Total</th></tr>
+      <tr class="item-row">
+        <td>{{ bill.book_name }}</td>
+        <td>{{ bill.description }}</td>
+        <td>{{ bill.quantity }}</td>
+        <td>{{ bill.price|money(0) }}</td>
+        <td class="right">INR {{ totals.line_total|money(0) }}</td>
+      </tr>
+    </table>
+    <div class="total">INR {{ totals.total_amount|money(0) }}</div>
+    <section class="thanks">
+      <p><strong>Thank you for your purchase!</strong></p>
+      <p>Books open doors to new worlds, minds, and possibilities.</p>
+      <p>Books are good company in sad times and happy times, for books are people who have managed to stay alive by hiding between the covers of a book.</p>
+    </section>
+  </div>
+</main>
+{% endblock %}

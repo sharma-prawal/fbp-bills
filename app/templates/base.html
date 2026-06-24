@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#A07E5B">
+    <title>{{ title or "FBP Bills" }}</title>
+    <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+    <link rel="manifest" href="/static/site.webmanifest">
+    <!-- Google Fonts Integration -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=Pinyon+Script&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/app.css">
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="shell topbar-inner">
+        <div class="brand-lockup">
+          <a class="brand" href="/">
+            <div class="wax-seal">
+              <div class="wax-seal-inner">
+                <span class="wax-seal-letter">F</span>
+              </div>
+            </div>
+            FBP Studio
+          </a>
+          <div class="tagline">Monthly reimbursement PDFs from saved defaults.</div>
+        </div>
+        <nav class="nav primary-nav" aria-label="Primary">
+          <a href="/" class="nav-item">Dashboard</a>
+          <a href="/profile" class="nav-item">Profile</a>
+          <a href="/documents" class="nav-item">Documents</a>
+        </nav>
+      </div>
+      <div class="tool-strip shell">
+        <nav class="nav" aria-label="Generators">
+          <a href="/generate/fuel" class="tool-link">Fuel</a>
+          <a href="/generate/driver" class="tool-link">Driver</a>
+          <a href="/generate/internet" class="tool-link">Internet</a>
+          <a href="/generate/book" class="tool-link">Book</a>
+        </nav>
+      </div>
+    </header>
+    <main class="shell" style="position: relative;">
+      <!-- Print Registration Marks & Calligraphic Accents -->
+      <div class="print-registration left-mark">
+        <span>Press Proof #09</span>
+        <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8"/><path d="M12 2v20M2 12h20"/></svg>
+      </div>
+      <div class="print-registration right-mark">
+        <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8"/><path d="M12 2v20M2 12h20"/></svg>
+        <span>Page Register</span>
+      </div>
+      {% block content %}{% endblock %}
+    </main>
+    <!-- Background Parchment Watermark -->
+    <div class="parchment-watermark">
+      <svg viewBox="0 0 500 500" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="250" cy="250" r="180" stroke="currentColor" stroke-width="1.5" stroke-dasharray="8 6"/>
+        <circle cx="250" cy="250" r="172" stroke="currentColor" stroke-width="0.5"/>
+        <circle cx="250" cy="250" r="190" stroke="currentColor" stroke-width="0.5"/>
+        <path d="M250 80 C270 120, 230 160, 250 200 C270 240, 230 280, 250 320" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+        <path d="M250 140 C210 180, 290 220, 250 260 C210 300, 290 340, 250 380" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+        <text x="250" y="295" font-family="'Cormorant Garamond', serif" font-size="140" font-weight="300" text-anchor="middle" fill="currentColor">F</text>
+        <text x="250" y="340" font-family="'Inter', sans-serif" font-size="10" font-weight="600" letter-spacing="0.4em" text-anchor="middle" fill="currentColor">EST. 2026</text>
+        <text x="250" y="145" font-family="'Pinyon Script', cursive" font-size="36" text-anchor="middle" fill="currentColor">Bespoke Registry</text>
+      </svg>
+    </div>
+  </body>
+</html>

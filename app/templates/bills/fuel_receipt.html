@@ -1,0 +1,89 @@
+{% extends "bills/_pdf_base.html" %}
+{% block style %}
+<style>
+  @page { size: 420mm 594mm; margin: 0; }
+  body { font-family: "Courier New", "Courier", monospace; color: #5f6368; }
+  .scan-page { width: 180mm; margin: 0 auto; text-align: center; }
+  .scan-page img { max-width: 180mm; max-height: 245mm; object-fit: contain; }
+  .receipt {
+    width: 138mm;
+    height: 342mm;
+    margin: 124mm auto 0;
+    position: relative;
+    box-sizing: border-box;
+    background-color: #f4f4f4;
+    {% if receipt_texture %}
+    background-image: url("{{ receipt_texture }}");
+    background-size: cover;
+    background-position: center;
+    {% endif %}
+    padding: 106px 28px 42px;
+    filter: grayscale(1);
+  }
+  .receipt::before,
+  .receipt::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 13px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='8' viewBox='0 0 16 8'%3E%3Cpath d='M0 0 L8 8 L16 0 Z' fill='white'/%3E%3C/svg%3E");
+    background-repeat: repeat-x;
+    background-size: 25px 13px;
+    z-index: 3;
+  }
+  .receipt::before { top: 0; }
+  .receipt::after { bottom: 0; transform: rotate(180deg); }
+  .template-3 { width: 160mm; padding-left: 34px; padding-right: 34px; }
+  .logo { width: 72mm; height: 70mm; margin: 0 auto 11px; display: grid; place-items: center; text-align: center; font-weight: 700; font-size: 28px; }
+  .logo img { max-width: 70mm; max-height: 68mm; object-fit: contain; }
+  .center { text-align: center; }
+  .station { margin: 0 0 16px; font-size: 21px; line-height: 1.05; font-weight: 700; letter-spacing: .01em; }
+  .station strong { display: block; margin-bottom: 8px; }
+  .lines { white-space: pre-line; line-height: 1.04; font-weight: 700; font-size: 22px; letter-spacing: .01em; }
+  .footer { position: absolute; left: 0; right: 0; bottom: 105px; text-align: center; white-space: pre-line; line-height: 1.08; font-weight: 700; font-size: 21px; letter-spacing: .01em; }
+</style>
+{% endblock %}
+{% block body %}
+{% if actual_receipt_image %}
+<main class="scan-page">
+  <img src="{{ actual_receipt_image }}" alt="User-provided actual fuel receipt">
+</main>
+{% else %}
+<main class="receipt template-{{ bill.receipt_template }}">
+  <div class="logo">
+    {% if vendor_logo_image %}
+      <img src="{{ vendor_logo_image }}" alt="{{ row.vendor }} logo">
+    {% else %}
+      {{ row.vendor }}
+    {% endif %}
+  </div>
+  <p class="station center"><strong>WELCOME!!!</strong>{{ row.vendor }}<br>{{ row.pump_address }}</p>
+  <div class="lines">
+TEL NO: {{ row.pump_phone }}
+RECEIPT NO: {{ row.receipt_number }}
+FCC ID:
+FIP NO:
+NOZZLE NO:
+
+PRODUCT:
+RATE/LTR: {{ row.petrol_price_per_litre }}
+AMOUNT: {{ amount|money(0) }}
+VOLUME(LTR): {{ row.litres }} lt
+
+VEH TYPE: Petrol
+VEH NO: {{ row.vehicle_number }}
+CUSTOMER NAME: {{ row.customer_name }}
+
+DATE: {{ row.date.isoformat() }} {{ row.receipt_time.strftime("%H:%M") }}
+MODE: {{ row.mode }}
+LST NO:
+VAT NO:
+ATTENDANT ID: not available
+  </div>
+  <div class="footer">****************
+Thank You! Visit Again
+Save Fuel, Save Money.</div>
+</main>
+{% endif %}
+{% endblock %}

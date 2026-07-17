@@ -1,0 +1,121 @@
+{% extends "bills/_pdf_base.html" %}
+{% block style %}
+<style>
+  @page { size: 420mm 594mm; margin: 0; }
+  body { font-size: 23px; }
+  .packet-page { break-after: page; }
+  .packet-page:last-child { break-after: auto; }
+  .logbook { width: 412mm; margin: 123mm auto 0; border: 2px solid #111; }
+  .logbook th, .logbook td { border: 1px solid #d8d8d8; padding: 5px 7px; line-height: 1.14; }
+  .logbook .title th { border: 0; border-bottom: 2px solid #111; font-size: 20px; text-align: center; padding: 2px; }
+  .logbook .head th { border-bottom: 2px solid #111; font-size: 23px; }
+  .thick-top td { border-top: 3px solid #111; }
+  .thick-bottom td { border-bottom: 3px solid #111; }
+  .right { text-align: right; }
+  .center { text-align: center; }
+  .receipt-wrap { width: 100%; min-height: 594mm; display: grid; place-items: start center; padding-top: 0; }
+  .scan-page { width: 180mm; margin: 0 auto; text-align: center; }
+  .scan-page img { max-width: 180mm; max-height: 170mm; object-fit: contain; }
+  .receipt {
+    width: 138mm;
+    height: 342mm;
+    margin-top: 124mm;
+    position: relative;
+    box-sizing: border-box;
+    background-color: #f4f4f4;
+    padding: 106px 28px 42px;
+    filter: grayscale(1);
+    font-family: "Courier New", "Courier", monospace;
+    color: #5f6368;
+  }
+  .receipt.has-texture { background-size: cover; background-position: center; }
+  .receipt::before,
+  .receipt::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 13px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='8' viewBox='0 0 16 8'%3E%3Cpath d='M0 0 L8 8 L16 0 Z' fill='white'/%3E%3C/svg%3E");
+    background-repeat: repeat-x;
+    background-size: 25px 13px;
+    z-index: 3;
+  }
+  .receipt::before { top: 0; }
+  .receipt::after { bottom: 0; transform: rotate(180deg); }
+  .template-3 { width: 160mm; padding-left: 34px; padding-right: 34px; }
+  .logo { width: 72mm; height: 70mm; margin: 0 auto 11px; display: grid; place-items: center; text-align: center; font-weight: 700; font-size: 28px; }
+  .logo img { max-width: 70mm; max-height: 68mm; object-fit: contain; }
+  .station { margin: 0 0 16px; font-size: 21px; line-height: 1.05; font-weight: 700; letter-spacing: .01em; }
+  .station strong { display: block; margin-bottom: 8px; }
+  .lines { white-space: pre-line; line-height: 1.04; font-weight: 700; font-size: 22px; letter-spacing: .01em; }
+  .footer { position: absolute; left: 0; right: 0; bottom: 105px; text-align: center; white-space: pre-line; line-height: 1.08; font-weight: 700; font-size: 21px; letter-spacing: .01em; }
+</style>
+{% endblock %}
+{% block body %}
+<section class="packet-page">
+  <table class="logbook">
+    <tr class="title"><th colspan="5">LOG BOOK ({{ month_label }})</th></tr>
+    <tr class="head"><th>Date</th><th>From</th><th>To</th><th>KM.Traveled</th><th>Purpose of Travel</th></tr>
+    {% for row in bill.rows if row.km_travelled > 0 %}
+    <tr><td class="center">{{ row.date|short_human_date }}</td><td>{{ row.from_city }}</td><td>{{ row.to_city }}</td><td class="right">{{ row.km_travelled|money(0) }}</td><td>{{ row.purpose }}</td></tr>
+    {% endfor %}
+    <tr class="thick-top"><td colspan="2"></td><td class="right"><strong>Total Running</strong></td><td class="right"><strong>{{ totals.total_km|money(0) }}</strong></td><td></td></tr>
+    <tr><td colspan="5" style="height: 94px;"></td></tr>
+    <tr class="thick-top"><td colspan="5">Bills Attached</td></tr>
+    <tr><th>S.No</th><th>Date</th><th>Ltrs</th><th>Cost Per Lt (as per Bill)</th><th>Total Amount</th></tr>
+    {% for row in bill.rows %}
+    <tr><td class="center">{{ loop.index }}</td><td class="center">{{ row.date|short_human_date }}</td><td class="center">{{ row.litres }}</td><td class="center">{{ row.petrol_price_per_litre }}</td><td class="center">{{ (row.litres * row.petrol_price_per_litre)|money(0) }}</td></tr>
+    {% endfor %}
+    <tr class="thick-top thick-bottom"><td colspan="2"></td><td class="center"><strong>{{ totals.total_litres|money(0) }}</strong></td><td></td><td class="center"><strong>{{ totals.total_amount|money(0) }}</strong></td></tr>
+    <tr><td><strong>Emp Signature</strong></td><td>{{ bill.employee_name }}</td><td colspan="3"></td></tr>
+    <tr><td><strong>Emp Code</strong></td><td>{{ bill.employee_code }}</td><td colspan="3"></td></tr>
+  </table>
+</section>
+
+{% for receipt in receipts %}
+<section class="packet-page receipt-wrap">
+  {% if receipt.actual_receipt_image %}
+  <main class="scan-page">
+    <img src="{{ receipt.actual_receipt_image }}" alt="User-provided actual fuel receipt">
+  </main>
+  {% else %}
+  <main class="receipt template-{{ bill.receipt_template }}{% if receipt.receipt_texture %} has-texture{% endif %}" {% if receipt.receipt_texture %}style="background-image: url('{{ receipt.receipt_texture }}')"{% endif %}>
+    <div class="logo">
+      {% if receipt.vendor_logo_image %}
+        <img src="{{ receipt.vendor_logo_image }}" alt="{{ receipt.row.vendor }} logo">
+      {% else %}
+        {{ receipt.row.vendor }}
+      {% endif %}
+    </div>
+    <p class="station center"><strong>WELCOME!!!</strong>{{ receipt.row.vendor }}<br>{{ receipt.row.pump_address }}</p>
+    <div class="lines">
+TEL NO: {{ receipt.row.pump_phone }}
+RECEIPT NO: {{ receipt.row.receipt_number }}
+FCC ID:
+FIP NO:
+NOZZLE NO:
+
+PRODUCT:
+RATE/LTR: {{ receipt.row.petrol_price_per_litre }}
+AMOUNT: {{ receipt.amount|money(0) }}
+VOLUME(LTR): {{ receipt.row.litres }} lt
+
+VEH TYPE: Petrol
+VEH NO: {{ receipt.row.vehicle_number }}
+CUSTOMER NAME: {{ receipt.row.customer_name }}
+
+DATE: {{ receipt.row.date.isoformat() }} {{ receipt.row.receipt_time.strftime("%H:%M") }}
+MODE: {{ receipt.row.mode }}
+LST NO:
+VAT NO:
+ATTENDANT ID: not available
+    </div>
+    <div class="footer">****************
+Thank You! Visit Again
+Save Fuel, Save Money.</div>
+  </main>
+  {% endif %}
+</section>
+{% endfor %}
+{% endblock %}

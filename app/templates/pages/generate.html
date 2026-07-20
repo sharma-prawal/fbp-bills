@@ -1,0 +1,289 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-head compact">
+  <div>
+    <p class="luxury-script">Press Edition</p>
+    <p class="eyebrow">Generator</p>
+    <h1>{{ config.name }}</h1>
+    <p class="lede">Review the summary, preview the document, then generate the PDF. Use overrides only for this run.</p>
+  </div>
+</section>
+
+<div class="generator-workspace">
+{% if bill_type == "internet" %}
+<form method="post" action="/generate/internet" class="card generator-form">
+  <input type="hidden" name="frame" value="1">
+  <div class="quick-panel">
+    <div>
+      <p class="eyebrow">Internet invoice</p>
+      <h2>{{ payload.provider_name }}</h2>
+      <p class="summary-line">{{ payload.customer_name }} - Account {{ payload.account_number }}</p>
+      <div class="summary-pills">
+        <span>{{ payload.bill_date }}</span>
+        <span>{{ payload.plan_speed }} {{ payload.plan_package }}</span>
+        <span>INR {{ payload.amount }}</span>
+      </div>
+      <label class="inline-field">Month <input type="month" name="month" value="{{ month }}" onchange="window.location.search = '?month=' + this.value;"></label>
+    </div>
+    <div class="actions compact-actions">
+      <button class="secondary" name="action" value="preview" formtarget="preview_frame">Preview</button>
+      <button name="action" value="generate">Generate PDF</button>
+    </div>
+  </div>
+  <details class="edit-details">
+    <summary>Monthly override fields</summary>
+    <div class="form-grid">
+      <label>Provider Name <input name="provider_name" value="{{ payload.provider_name }}"></label>
+      <label>Provider Logo Text <input name="provider_logo_text" value="{{ payload.provider_logo_text or '' }}"></label>
+      <label>Provider Logo Path <input name="provider_logo_path" value="{{ payload.provider_logo_path or '' }}" placeholder="assets/logo-airtel.png"></label>
+      <label>Provider Address <textarea name="provider_address">{{ payload.provider_address }}</textarea></label>
+      <label>Customer Name <input name="customer_name" value="{{ payload.customer_name }}"></label>
+      <label>Customer Address <textarea name="customer_address">{{ payload.customer_address }}</textarea></label>
+      <label>Account Number <input name="account_number" value="{{ payload.account_number }}"></label>
+      <label>Invoice Number <input name="invoice_number" value="{{ payload.invoice_number }}"></label>
+      <label>Bill Date <input type="date" name="bill_date" value="{{ payload.bill_date }}"></label>
+      <label>Plan Speed <input name="plan_speed" value="{{ payload.plan_speed }}"></label>
+      <label>Plan Package <input name="plan_package" value="{{ payload.plan_package }}"></label>
+      <label>Plan Validity <input name="plan_validity" value="{{ payload.plan_validity }}"></label>
+      <label>Taxable Amount <input name="taxable_amount" value="{{ payload.tax.taxable_amount }}"></label>
+      <label>CGST Rate <input name="cgst_rate" value="{{ payload.tax.cgst_rate }}"></label>
+      <label>SGST Rate <input name="sgst_rate" value="{{ payload.tax.sgst_rate }}"></label>
+      <label>Payments Received <input name="payments_received" value="{{ payload.tax.payments_received }}"></label>
+      <label>Amount <input name="amount" value="{{ payload.amount }}"></label>
+      <label>Discount <input name="discount" value="{{ payload.discount }}"></label>
+      <label>Payment Method <input name="payment_method" value="{{ payload.payment_method }}"></label>
+    </div>
+  </details>
+</form>
+{% elif bill_type == "driver" %}
+<form method="post" action="/generate/driver" class="card generator-form" enctype="multipart/form-data">
+  <input type="hidden" name="frame" value="1">
+  <div class="quick-panel">
+    <div>
+      <p class="eyebrow">Driver receipt</p>
+      <h2>{{ payload.driver_name }}</h2>
+      <p class="summary-line">{{ payload.employee_name }} - {{ payload.vehicle_number }}</p>
+      <div class="summary-pills">
+        <span>{{ payload.receipt_date }}</span>
+        <span>INR {{ payload.salary_amount }}</span>
+        <span>Stamp and signature ready</span>
+      </div>
+      <label class="inline-field">Month <input type="month" name="month" value="{{ month }}" onchange="window.location.search = '?month=' + this.value;"></label>
+    </div>
+    <div class="actions compact-actions">
+      <button class="secondary" name="action" value="preview" formtarget="preview_frame">Preview</button>
+      <button name="action" value="generate">Generate PDF</button>
+    </div>
+  </div>
+  <details class="edit-details">
+    <summary>Monthly override fields</summary>
+    <div class="form-grid">
+      <label>Employee Name <input name="employee_name" value="{{ payload.employee_name }}"></label>
+      <label>Driver Name <input name="driver_name" value="{{ payload.driver_name }}"></label>
+      <label>Vehicle Number <input name="vehicle_number" value="{{ payload.vehicle_number }}"></label>
+      <label>Salary Amount <input name="salary_amount" value="{{ payload.salary_amount }}"></label>
+      <label>Receipt Date <input type="date" name="receipt_date" value="{{ payload.receipt_date }}"></label>
+      <label>Template
+        <select name="template_style">
+          <option value="1" {% if payload.template_style == "1" or not payload.template_style %}selected{% endif %}>1 - Declaration and acknowledgement</option>
+          <option value="2" {% if payload.template_style == "2" %}selected{% endif %}>2 - Compact acknowledgement</option>
+        </select>
+      </label>
+      <label>Existing Revenue Stamp
+        <select name="revenue_stamp_asset_id">
+          <option value="">Use local default if present</option>
+          {% for asset in assets.revenue_stamp %}
+          <option value="{{ asset.id }}" {% if payload.revenue_stamp_asset_id == asset.id %}selected{% endif %}>{{ asset.label }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>Upload Revenue Stamp
+        <div class="luxury-file-input">
+          <span>Choose or drop image</span>
+          <strong>Select Stamp File</strong>
+          <input type="file" name="revenue_stamp_upload" accept="image/png,image/jpeg,image/webp">
+        </div>
+      </label>
+      <label>Revenue Stamp Path
+        <input name="revenue_stamp_path" value="{{ payload.revenue_stamp_path or '' }}" placeholder="assets/revenu.webp">
+      </label>
+      <label>Existing Signature
+        <select name="signature_asset_id">
+          <option value="">Use local default if present</option>
+          {% for asset in assets.signature %}
+          <option value="{{ asset.id }}" {% if payload.signature_asset_id == asset.id %}selected{% endif %}>{{ asset.label }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>Upload Signature
+        <div class="luxury-file-input">
+          <span>Choose or drop image</span>
+          <strong>Select Signature File</strong>
+          <input type="file" name="signature_upload" accept="image/png,image/jpeg,image/webp">
+        </div>
+      </label>
+      <label>Signature Path
+        <input name="signature_path" value="{{ payload.signature_path or '' }}" placeholder="assets/signature-rajeev.png">
+      </label>
+    </div>
+    <div class="subsection-title">Stamp and signature calibration</div>
+    <div class="form-grid">
+      <label>Stamp X <input type="number" step="1" name="stamp_x" value="{{ payload.stamp_x or 78 }}"></label>
+      <label>Stamp Y <input type="number" step="1" name="stamp_y" value="{{ payload.stamp_y or 0 }}"></label>
+      <label>Stamp Scale <input type="number" step="0.05" min="0.1" name="stamp_scale" value="{{ payload.stamp_scale or 1 }}"></label>
+      <label>Signature X <input type="number" step="1" name="signature_x" value="{{ payload.signature_x or -390 }}"></label>
+      <label>Signature Y <input type="number" step="1" name="signature_y" value="{{ payload.signature_y if payload.signature_y is not none else -88 }}"></label>
+      <label>Signature Scale <input type="number" step="0.05" min="0.1" name="signature_scale" value="{{ payload.signature_scale or 1 }}"></label>
+      <label>Signature Rotation <input type="number" step="1" name="signature_rotation" value="{{ payload.signature_rotation or -16 }}"></label>
+    </div>
+    <p class="note">Use uploaded assets only when the saved defaults need to change.</p>
+  </details>
+</form>
+{% elif bill_type == "book" %}
+<form method="post" action="/generate/book" class="card generator-form">
+  <input type="hidden" name="frame" value="1">
+  <div class="quick-panel">
+    <div>
+      <p class="eyebrow">Book receipt</p>
+      <h2>{{ payload.lookup_keyword or payload.book_name }}</h2>
+      <p class="summary-line">{{ payload.customer_name }} - {{ payload.store_name }}</p>
+      <div class="summary-pills">
+        <span>{{ payload.receipt_date }}</span>
+        <span>Qty {{ payload.quantity }}</span>
+        <span>INR {{ payload.price }}</span>
+      </div>
+      <label class="inline-field">Month <input type="month" name="month" value="{{ month }}" onchange="window.location.search = '?month=' + this.value;"></label>
+    </div>
+    <div class="actions compact-actions">
+      <button class="secondary" name="action" value="preview" formtarget="preview_frame">Preview</button>
+      <button name="action" value="generate">Generate PDF</button>
+    </div>
+  </div>
+  <details class="edit-details">
+    <summary>Monthly override fields</summary>
+    <div class="form-grid">
+      <label>Lookup Keyword <input name="lookup_keyword" value="{{ payload.lookup_keyword or payload.book_name }}" placeholder="Search title or keyword"></label>
+      <label>Receipt Number <input name="receipt_number" value="{{ payload.receipt_number }}"></label>
+      <label>Receipt Date <input type="date" name="receipt_date" value="{{ payload.receipt_date }}"></label>
+      <label>Customer Name <input name="customer_name" value="{{ payload.customer_name }}"></label>
+      <label>Store Name <input name="store_name" value="{{ payload.store_name }}"></label>
+      <label>Store Address <textarea name="store_address">{{ payload.store_address }}</textarea></label>
+      <label>Book Name <input name="book_name" value="{{ payload.book_name }}"></label>
+      <label>Author <input name="author" value="{{ payload.author }}"></label>
+      <label>Publisher <input name="publisher" value="{{ payload.publisher }}"></label>
+      <label>Description <textarea name="description">{{ payload.description }}</textarea></label>
+      <label>Quantity <input name="quantity" value="{{ payload.quantity }}"></label>
+      <label>Price <input name="price" value="{{ payload.price }}"></label>
+      <label>Payment Method <input name="payment_method" value="{{ payload.payment_method }}"></label>
+      <label class="checkbox-line"><input type="checkbox" name="price_confirmed" checked> Price confirmed by me</label>
+    </div>
+    <p><a class="text-link" href="/book-lookup" target="_blank">Search book metadata</a></p>
+  </details>
+</form>
+{% elif bill_type == "fuel" %}
+<form method="post" action="/generate/fuel" class="card generator-form">
+  <input type="hidden" name="frame" value="1">
+  <div class="quick-panel">
+    <div>
+      <p class="eyebrow">Fuel packet</p>
+      <h2>{{ payload.rows|length }} receipt rows</h2>
+      <p class="summary-line">{{ payload.employee_name }} - {{ payload.vehicle_number }}</p>
+      <div class="summary-pills">
+        <span>Logbook</span>
+        <span>Receipt PDFs</span>
+        <span>Merged packet</span>
+      </div>
+      <label class="inline-field">Month <input type="month" name="month" value="{{ month }}" onchange="window.location.search = '?month=' + this.value;"></label>
+    </div>
+    <div class="actions compact-actions">
+      <button class="secondary" name="action" value="preview" formtarget="preview_frame">Preview Packet</button>
+      <button name="action" value="generate">Generate PDF</button>
+    </div>
+  </div>
+  <details class="edit-details">
+    <summary>Manual fuel rows</summary>
+    <label class="checkbox-line"><input type="checkbox" name="manual_fuel_rows"> Use these rows for this run</label>
+    <label>Fuel Receipt Template
+      <select name="receipt_template">
+        <option value="1" {% if payload.receipt_template == "1" or not payload.receipt_template %}selected{% endif %}>1 - Tall thermal receipt</option>
+        <option value="2" {% if payload.receipt_template == "2" %}selected{% endif %}>2 - Compact thermal receipt</option>
+        <option value="3" {% if payload.receipt_template == "3" %}selected{% endif %}>3 - Wide pump receipt</option>
+      </select>
+    </label>
+    <div class="fuel-row-list">
+      {% for row in payload.rows %}
+      <section class="fuel-row-card">
+        <div class="fuel-row-head">
+          <strong>Receipt {{ loop.index }}</strong>
+          <span>{{ row.date }} - {{ row.vendor }}</span>
+        </div>
+        <div class="fuel-row-grid route-grid">
+          <label>Date <input type="date" name="row_date" value="{{ row.date }}"></label>
+          <label>From <input name="row_from_city" value="{{ row.from_city }}"></label>
+          <label>To <input name="row_to_city" value="{{ row.to_city }}"></label>
+          <label>KM <input name="row_km_travelled" value="{{ row.km_travelled }}"></label>
+        </div>
+        <label>Purpose <input name="row_purpose" value="{{ row.purpose }}"></label>
+        <div class="fuel-row-grid fuel-values-grid">
+          <label>Fuel City <input name="row_fuel_city" value="{{ row.fuel_city }}"></label>
+          <label>Litres <input name="row_litres" value="{{ row.litres }}"></label>
+          <label>Price/Litre <input name="row_petrol_price_per_litre" value="{{ row.petrol_price_per_litre }}"></label>
+          <label>Receipt No. <input name="row_receipt_number" value="{{ row.receipt_number }}"></label>
+        </div>
+        <div class="fuel-row-grid pump-grid">
+          <label>Vendor <input name="row_vendor" value="{{ row.vendor }}"></label>
+          <label>Phone <input name="row_pump_phone" value="{{ row.pump_phone }}"></label>
+          <label>Pump Address <input name="row_pump_address" value="{{ row.pump_address }}"></label>
+        </div>
+        <label>Price Source <input name="row_price_source" value="{{ row.price_source }}"></label>
+        <input type="hidden" name="row_vendor_logo_path" value="{{ row.vendor_logo_path or '' }}">
+        <input type="hidden" name="row_actual_receipt_image_path" value="{{ row.actual_receipt_image_path or '' }}">
+      </section>
+      {% endfor %}
+    </div>
+    <p class="note">Leave this unchecked to use profile defaults and fetched fuel prices.</p>
+  </details>
+</form>
+{% endif %}
+  <aside class="preview-panel">
+    <div class="preview-panel-head">
+      <div>
+        <p class="eyebrow">Live preview</p>
+        <h2>{{ config.name }}</h2>
+      </div>
+      <a class="text-link" href="{{ preview_url }}" target="_blank">Open</a>
+    </div>
+    <div class="readiness-grid">
+      {% for item in readiness %}
+      <div class="readiness-item {{ item.state }}">
+        <span>{{ item.label }}</span>
+        <strong>{{ item.value }}</strong>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="proofing-workspace">
+      <!-- Crop Marks -->
+      <div class="crop-mark top-left"></div>
+      <div class="crop-mark top-right"></div>
+      <div class="crop-mark bottom-left"></div>
+      <div class="crop-mark bottom-right"></div>
+      
+      <!-- Rulers -->
+      <div class="proofing-ruler-x">
+        <span>0</span><span>20</span><span>40</span><span>60</span><span>80</span><span>100</span><span>120</span><span>140</span><span>160</span><span>180</span><span>200</span>
+      </div>
+      <div class="proofing-ruler-y">
+        <span>0</span><span>40</span><span>80</span><span>120</span><span>160</span><span>200</span><span>240</span><span>280</span><span>320</span><span>360</span><span>400</span>
+      </div>
+      
+      <iframe
+        class="pdf-preview-frame"
+        name="preview_frame"
+        title="{{ config.name }} preview"
+        scrolling="yes"
+        loading="lazy"
+        srcdoc="<style>body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Arial,sans-serif;background:#f8f7f2;color:#1e2932}.preview-empty{min-height:640px;display:grid;place-content:center;text-align:center;padding:24px}.preview-empty p{margin:0 0 8px;color:#65727c;font-size:13px}.preview-empty strong{font-size:16px}</style><section class='preview-empty'><p>Preview is loaded on demand.</p><strong>Click Preview to render the current structured fields.</strong></section>"></iframe>
+    </div>
+  </aside>
+</div>
+{% endblock %}

@@ -1,0 +1,46 @@
+{% extends "bills/_pdf_base.html" %}
+{% block style %}
+<style>
+  @page { size: 420mm 594mm; margin: 70mm 4mm 98mm; }
+  body { font-size: 40px; line-height: 1.4; }
+  .frame { border: 1.4px solid #222; padding: 54px 64px 28px; min-height: 425mm; box-sizing: border-box; }
+  h1, h2 { text-align: center; font-size: 32px; margin-bottom: 36px; }
+  h2 { margin-top: 50px; margin-bottom: 40px; }
+  p { margin: 0 0 28px; }
+  .rule { border-top: 5px solid #111; margin: 40px 0 0; }
+  .stamp-stack { position: relative; width: 390px; height: 160px; margin: 30px 0 10px; }
+  .stamp-placeholder { width: 178px; height: 160px; border: 1px dashed #bbb; color: #888; font-size: 18px; display: grid; place-items: center; }
+  .stamp-image { width: calc(180px * var(--stamp-scale, 1)); max-height: none; object-fit: contain; margin-left: var(--stamp-x, 78px); transform: translateY(var(--stamp-y, 0)); }
+  .signature-image { position: absolute; left: var(--signature-x, -390px); bottom: var(--signature-y, -88px); width: calc(1120px * var(--signature-scale, 1)); max-height: none; object-fit: contain; transform: rotate(var(--signature-rotation, -16deg)); transform-origin: center; z-index: 2; }
+  .signature-line { margin: 18px 0 8px; font-size: 18px; color: #555; }
+</style>
+{% endblock %}
+{% block body %}
+<main class="frame template-{{ bill.template_style }}">
+  <h1>Driver Salary Receipt</h1>
+  <p>This is to certify that I have paid INR <strong>{{ bill.salary_amount|money(0) }}/-</strong> to driver, Mr / Mrs. <strong>{{ bill.driver_name }}</strong> for the month of <strong>{{ month_name }}</strong> (Acknowledged receipt enclosed). I also declare that the driver is exclusively utilized for official purpose only. Please reimburse the above amount. I further declare that what is stated above is correct and true.</p>
+  <p><strong>Employee Name:</strong> {{ bill.employee_name }}</p>
+  <p><strong>Date:</strong> {{ bill.receipt_date|human_date }}</p>
+  <div class="rule"></div>
+  <h2>Receipt Acknowledgment</h2>
+  <p><strong>Date of Receipt:</strong> {{ bill.receipt_date|human_date }}</p>
+  <p><strong>For the Month of:</strong> {{ month_name }}</p>
+  <p><strong>Name of Driver:</strong> {{ bill.driver_name }}</p>
+  <p><strong>Vehicle No:</strong> {{ bill.vehicle_number }}</p>
+  <p>Received a sum of INR <strong>{{ bill.salary_amount|money(0) }}/-</strong> only for the <strong>{{ month_name }}</strong> month from Mr / Mrs. <strong>{{ bill.employee_name }}</strong>.</p>
+  <p>Revenue Stamp</p>
+  <div class="stamp-stack" style="--stamp-x: {{ bill.stamp_x }}px; --stamp-y: {{ bill.stamp_y }}px; --stamp-scale: {{ bill.stamp_scale }}; --signature-x: {{ bill.signature_x }}px; --signature-y: {{ bill.signature_y }}px; --signature-scale: {{ bill.signature_scale }}; --signature-rotation: {{ bill.signature_rotation }}deg;">
+    {% if revenue_stamp %}
+      <img class="stamp-image" src="{{ revenue_stamp }}" alt="Uploaded revenue stamp">
+    {% else %}
+      <div class="stamp-placeholder">Optional stamp</div>
+    {% endif %}
+    {% if signature %}
+      <img class="signature-image" src="{{ signature }}" alt="Uploaded signature">
+    {% endif %}
+  </div>
+  {% if not signature %}
+    <div class="signature-line">Signature: ______________________________</div>
+  {% endif %}
+</main>
+{% endblock %}

@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-head compact">
+  <div>
+    <p class="luxury-script">Personal Ledger</p>
+    <p class="eyebrow">Saved defaults</p>
+    <h1>Profile</h1>
+    <p class="lede">Store routine identity, route, vendor, dates, and asset placement defaults once. Generators use these values unless you override a run.</p>
+  </div>
+</section>
+
+{% if onboarding %}
+<section class="card onboarding-callout" role="status">
+  <p class="eyebrow">First-time setup</p>
+  <h2>Complete your profile before generating documents</h2>
+  <p>This installation starts without personal data. Required fields are marked below and remain stored only in this local database.</p>
+  {% if error %}<p class="form-error">{{ error }}</p>{% endif %}
+  {% if missing_fields %}
+  <p class="missing-summary"><strong>Still required:</strong> {{ missing_fields|join(", ") }}</p>
+  {% endif %}
+</section>
+{% endif %}
+
+<form method="post" enctype="multipart/form-data" class="stacked-form profile-workspace">
+  <nav class="tab-rail" aria-label="Profile sections">
+    <a href="#identity">Identity</a>
+    <a href="#fuel">Fuel route</a>
+    <a href="#internet">Internet</a>
+    <a href="#driver">Driver</a>
+    <a href="#book">Book</a>
+    <a href="#assets">Assets</a>
+  </nav>
+
+  <section id="identity" class="card profile-section">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Identity</p>
+        <h2>Employee</h2>
+      </div>
+      <p>Used across every generated document.</p>
+    </div>
+    <div class="form-grid">
+      <label>Name <input name="employee_name" value="{{ profile.get('employee_name', '') }}" required></label>
+      <label>Mobile Number <input name="mobile_number" value="{{ profile.get('mobile_number') or profile.get('phone', '') }}" required></label>
+      <label>Vehicle Number <input name="vehicle_number" value="{{ profile.get('vehicle_number', '') }}" required></label>
+      <label>Project Name <input name="project_name" value="{{ profile.get('project_name', '') }}" required></label>
+      <label class="wide">Address <textarea name="address" required>{{ profile.get('address', '') }}</textarea></label>
+      <label>Employee Code <input name="employee_code" value="{{ profile.get('employee_code', '') }}" required></label>
+      <label>Email <input name="email" value="{{ profile.get('email', '') }}"></label>
+    </div>
+  </section>
+
+  <section id="fuel" class="card profile-section">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Fuel route</p>
+        <h2>Travel and pump defaults</h2>
+      </div>
+      <p>Controls fuel rows, receipt addresses, phone numbers, and logo matching.</p>
+    </div>
+    <div class="form-grid">
+      <label>Travel From City <input name="default_from_city" value="{{ profile.get('default_from_city', '') }}" required></label>
+      <label>Travel To City <input name="default_to_city" value="{{ profile.get('default_to_city', '') }}" required></label>
+      <label>From Receipt Fuel City <input name="from_city_receipt_fuel_city" value="{{ profile.get('from_city_receipt_fuel_city', '') }}" required></label>
+      <label>To Receipt Fuel City <input name="to_city_receipt_fuel_city" value="{{ profile.get('to_city_receipt_fuel_city', '') }}" required></label>
+      <label>From City Petrol Pump <input name="from_city_pump_name" value="{{ profile.get('from_city_pump_name') or profile.get('default_fuel_vendor', '') }}" required></label>
+      <label>To City Petrol Pump <input name="to_city_pump_name" value="{{ profile.get('to_city_pump_name', '') }}" required></label>
+      <label>From Pump Phone <input name="from_city_pump_phone" value="{{ profile.get('from_city_pump_phone', '') }}" required></label>
+      <label>To Pump Phone <input name="to_city_pump_phone" value="{{ profile.get('to_city_pump_phone', '') }}" required></label>
+      <label class="wide">From City Pump Address <textarea name="from_city_pump_address" required>{{ profile.get('from_city_pump_address', '') }}</textarea></label>
+      <label class="wide">To City Pump Address <textarea name="to_city_pump_address" required>{{ profile.get('to_city_pump_address', '') }}</textarea></label>
+      <label>Fuel Receipt Template
+        <select name="default_fuel_receipt_template">
+          <option value="1" {% if profile.get('default_fuel_receipt_template', '1') == '1' %}selected{% endif %}>Tall thermal receipt</option>
+          <option value="2" {% if profile.get('default_fuel_receipt_template') == '2' %}selected{% endif %}>Compact thermal receipt</option>
+          <option value="3" {% if profile.get('default_fuel_receipt_template') == '3' %}selected{% endif %}>Wide pump receipt</option>
+        </select>
+      </label>
+    </div>
+  </section>
+
+  <section id="internet" class="card profile-section">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Internet</p>
+        <h2>Provider defaults</h2>
+      </div>
+      <p>Used to prefill the monthly invoice.</p>
+    </div>
+    <div class="form-grid">
+      <label>Default Provider <input name="default_internet_provider" value="{{ profile.get('default_internet_provider', '') }}" required></label>
+      <label class="wide">Provider Address <textarea name="default_internet_provider_address" required>{{ profile.get('default_internet_provider_address', '') }}</textarea></label>
+      <label>Account Number <input name="internet_account_number" value="{{ profile.get('internet_account_number', '') }}" required></label>
+      <label>Internet Bill Date <input type="date" name="default_internet_bill_date" value="{{ profile.get('default_internet_bill_date', '') }}" required></label>
+      <label>Internet Base Amount <input name="default_internet_base_amount" placeholder="3999" value="{{ profile.get('default_internet_base_amount', '') }}" required></label>
+    </div>
+  </section>
+
+  <section id="driver" class="card profile-section">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Driver</p>
+        <h2>Salary receipt defaults</h2>
+      </div>
+      <p>Controls the driver receipt content and default date.</p>
+    </div>
+    <div class="form-grid">
+      <label>Default Driver Name <input name="default_driver_name" value="{{ profile.get('default_driver_name', '') }}" required></label>
+      <label>Default Driver Salary <input name="default_driver_salary" value="{{ profile.get('default_driver_salary', '') }}" required></label>
+      <label>Driver Receipt Date <input type="date" name="default_driver_receipt_date" value="{{ profile.get('default_driver_receipt_date', '') }}" required></label>
+      <label>Driver Signature Upload <input type="file" name="driver_signature_upload" accept="image/*"></label>
+    </div>
+  </section>
+
+  <section id="book" class="card profile-section">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Book</p>
+        <h2>Receipt defaults</h2>
+      </div>
+      <p>Book title changes dynamically; these values stay stable unless edited.</p>
+    </div>
+    <div class="form-grid">
+      <label>Book Price <input name="default_book_price" value="{{ profile.get('default_book_price', '') }}" required></label>
+      <label>Book Receipt Date <input type="date" name="default_book_receipt_date" value="{{ profile.get('default_book_receipt_date', '') }}" required></label>
+      <label>Default Store Name <input name="default_book_store_name" value="{{ profile.get('default_book_store_name', '') }}" required></label>
+      <label>Default Payment Method <input name="default_book_payment_method" value="{{ profile.get('default_book_payment_method', '') }}" required></label>
+      <label>Default Quantity <input name="default_book_quantity" value="{{ profile.get('default_book_quantity', '') }}" required></label>
+      <label class="wide">Default Store Address <textarea name="default_book_store_address" required>{{ profile.get('default_book_store_address', '') }}</textarea></label>
+      <input type="hidden" name="default_book_lookup_keyword" value="">
+    </div>
+  </section>
+
+  <section id="assets" class="card profile-section">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Assets</p>
+        <h2>Driver stamp and signature placement</h2>
+      </div>
+      <p>Fine tune once, then every driver receipt uses the saved placement.</p>
+    </div>
+    <div class="form-grid">
+      <label>Stamp X <input type="number" step="1" name="driver_stamp_x" value="{{ profile.get('driver_stamp_x', '78') }}"></label>
+      <label>Stamp Y <input type="number" step="1" name="driver_stamp_y" value="{{ profile.get('driver_stamp_y', '0') }}"></label>
+      <label>Stamp Scale <input type="number" step="0.05" min="0.1" name="driver_stamp_scale" value="{{ profile.get('driver_stamp_scale', '1') }}"></label>
+      <label>Signature X <input type="number" step="1" name="driver_signature_x" value="{{ profile.get('driver_signature_x', '-390') }}"></label>
+      <label>Signature Y <input type="number" step="1" name="driver_signature_y" value="{{ profile.get('driver_signature_y', '-88') }}"></label>
+      <label>Signature Scale <input type="number" step="0.05" min="0.1" name="driver_signature_scale" value="{{ profile.get('driver_signature_scale', '1') }}"></label>
+      <label>Signature Rotation <input type="number" step="1" name="driver_signature_rotation" value="{{ profile.get('driver_signature_rotation', '-16') }}"></label>
+    </div>
+  </section>
+
+  <div class="sticky-actions">
+    <button type="submit">Save Profile</button>
+    <a class="button secondary" href="/">Dashboard</a>
+  </div>
+</form>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const tabs = document.querySelectorAll('.tab-rail a');
+    const sections = document.querySelectorAll('.profile-section');
+    
+    if (tabs.length > 0) tabs[0].classList.add('active');
+    
+    tabs.forEach(tab => {
+      tab.addEventListener('click', (e) => {
+        e.preventDefault();
+        const targetId = tab.getAttribute('href');
+        const targetSec = document.querySelector(targetId);
+        if (targetSec) {
+          window.scrollTo({
+            top: targetSec.offsetTop - 140,
+            behavior: 'smooth'
+          });
+          tabs.forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          // Update URL hash without jumping
+          history.pushState(null, null, targetId);
+        }
+      });
+    });
+
+    const observerOptions = {
+      root: null,
+      rootMargin: '-150px 0px -60% 0px',
+      threshold: 0
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const id = entry.target.getAttribute('id');
+          tabs.forEach(tab => {
+            if (tab.getAttribute('href') === `#${id}`) {
+              tab.classList.add('active');
+            } else {
+              tab.classList.remove('active');
+            }
+          });
+        }
+      });
+    }, observerOptions);
+
+    sections.forEach(sec => observer.observe(sec));
+  });
+</script>
+{% endblock %}

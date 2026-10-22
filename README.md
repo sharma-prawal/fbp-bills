@@ -1,5 +1,13 @@
 # FBP Bills
 
+> A self-hosted studio that generates monthly reimbursement PDFs (fuel, driver, internet, books) from saved defaults.
+
+<p align="center">
+  <img src="docs/screenshots/desktop.jpg" width="72%" alt="Screenshot" />
+  <img src="docs/screenshots/mobile.jpg" width="18%" alt="Screenshot" />
+</p>
+
+
 Local/self-hosted reimbursement document generator for controlled, user-verified monthly documents:
 
 - Internet invoice

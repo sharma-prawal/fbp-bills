@@ -206,3 +206,7 @@ The public freeforonline.com pages were inspected only for high-level categories
 - No authentication is implemented in v1, but the database has user/profile tables and the service layer is multi-user-ready.
 - Copying a live working directory can expose its SQLite database and generated files. Use `prepare-share` for distribution.
 - Exact output depends on provided local assets and profile defaults; use visual-audit after changing templates or calibration values.
+
+## License
+
+Released under the [MIT License](LICENSE).
